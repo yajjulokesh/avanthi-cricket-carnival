@@ -69,7 +69,7 @@ playersRouter.post('/register', (req: Request, res: Response) => {
   // Generate bucket-scoped random number (§10)
   const bucketCount = db
     .prepare('SELECT count(*) as cnt FROM players WHERE bucket = ?')
-    .get(parsed.bucket) as { cnt: number };
+    .get(parsed.bucket!) as { cnt: number };
   const bucketNumber = bucketCount.cnt + 1;
 
   const id = `player-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
@@ -106,13 +106,13 @@ playersRouter.post('/register', (req: Request, res: Response) => {
     cricHeroesProfileUrl || '',
     cricHeroesMobile || '',
     cricHeroesPending ? 1 : 0,
-    parsed.course,
-    parsed.program,
-    parsed.branch,
-    parsed.admissionYear,
-    parsed.yearOfStudy,
+    parsed.course!,
+    parsed.program!,
+    parsed.branch!,
+    parsed.admissionYear!,
+    parsed.yearOfStudy!,
     parsed.isLateral ? 1 : 0,
-    parsed.bucket,
+    parsed.bucket!,
     derivedType,
     JSON.stringify(skills),
     JSON.stringify(defaultStats),
@@ -134,7 +134,7 @@ playersRouter.post('/register', (req: Request, res: Response) => {
 /**
  * Public Player List (Phone numbers stripped)
  */
-playersRouter.get('/public-list', (req: Request, res: Response) => {
+playersRouter.get(['/', '/public-list'], (req: Request, res: Response) => {
   const rows = db.prepare('SELECT * FROM players ORDER BY name ASC').all() as any[];
   const players: Player[] = rows.map((r) => ({
     id: r.id,

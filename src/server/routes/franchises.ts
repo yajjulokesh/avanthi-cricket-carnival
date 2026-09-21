@@ -44,7 +44,7 @@ franchisesRouter.post('/register', (req: Request, res: Response) => {
 /**
  * Public List of Franchises (Phone numbers stripped)
  */
-franchisesRouter.get('/public-list', (req: Request, res: Response) => {
+franchisesRouter.get(['/', '/public-list'], (req: Request, res: Response) => {
   const franchises = auctionEngine.getFranchises();
   return res.json(sanitizeFranchisesForPublic(franchises));
 });

@@ -539,7 +539,7 @@ export class AuctionEngine {
       UPDATE auction_sales 
       SET status = 'UNDONE', undone_at = ?, undone_by = ?, undo_reason = ? 
       WHERE id = ?
-    `).run(result.undoneSale.undoneAt, actor, reason, saleId);
+    `).run(result.undoneSale.undoneAt || new Date().toISOString(), actor, reason, saleId);
 
     // Return player to AUCTIONABLE pool
     db.prepare(`

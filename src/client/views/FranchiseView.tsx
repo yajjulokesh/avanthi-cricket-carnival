@@ -33,7 +33,7 @@ export const FranchiseView: React.FC<FranchiseViewProps> = ({
 
   // Real-time calculations of §12.1 and §12.2 for this franchise
   let maxBid = 1000;
-  let slotEligibility = { eligible: true, reason: '' };
+  let slotEligibility: { eligible: boolean; reason?: string } = { eligible: true, reason: '' };
 
   if (franchise && lotState?.bucket) {
     maxBid = calculateMaxBid(

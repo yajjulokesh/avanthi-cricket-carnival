@@ -33,7 +33,7 @@ export const ProxyBiddingTerminal: React.FC<ProxyBiddingTerminalProps> = ({
   const selectedFranchise = franchises.find((f) => f.id === selectedFranchiseId);
 
   let maxPermissibleBid = 0;
-  let slotEligibility = { eligible: true, reason: '' };
+  let slotEligibility: { eligible: boolean; reason?: string } = { eligible: true, reason: '' };
 
   if (selectedFranchise && lotState?.bucket) {
     maxPermissibleBid = calculateMaxBid(
