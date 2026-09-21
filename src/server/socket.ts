@@ -1,6 +1,7 @@
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import { auctionEngine } from './state.js';
 import { sanitizeFranchisesForPublic } from './serializers.js';
+import { googleSheetsService } from './services/sheets.js';
 
 export function setupSocketHandlers(io: SocketIOServer) {
   // Wire engine events to broadcast to all connected clients
@@ -18,9 +19,35 @@ export function setupSocketHandlers(io: SocketIOServer) {
       io.emit('sale_finalized', sale);
       const franchises = auctionEngine.getFranchises();
       io.emit('franchises_updated', sanitizeFranchisesForPublic(franchises));
+
+      // Asynchronous non-blocking push to Google Sheets
+      const buyerFranchise = franchises.find((f) => f.id === sale.franchiseId);
+      const player = auctionEngine.getPlayer(sale.playerId);
+      if (player) {
+        googleSheetsService.syncSaleToSheet({
+          playerId: player.id,
+          rollNumber: player.rollNumber,
+          status: 'SOLD',
+          soldPrice: sale.amount,
+          buyerFranchiseName: buyerFranchise?.name || sale.franchiseId,
+        }).catch((err) => console.error('Sheet Sync error:', err));
+      }
     },
     onPlayerStatusChange: (player) => {
       io.emit('player_status_updated', player);
+      if (player.status === 'UNSOLD') {
+        googleSheetsService.syncSaleToSheet({
+          playerId: player.id,
+          rollNumber: player.rollNumber,
+          status: 'UNSOLD',
+          soldPrice: 0,
+          buyerFranchiseName: '',
+        }).catch((err) => console.error('Sheet Sync error:', err));
+      } else if (player.status === 'AUCTIONABLE' && player.rollNumber) {
+        googleSheetsService.syncUndoToSheet(player.rollNumber).catch((err) =>
+          console.error('Sheet Undo Sync error:', err)
+        );
+      }
     },
   });
 

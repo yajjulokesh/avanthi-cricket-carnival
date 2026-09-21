@@ -7,6 +7,7 @@ import { ProxyBiddingTerminal } from './admin/ProxyBiddingTerminal.js';
 import { ScarcityTelemetryMatrix } from './admin/ScarcityTelemetryMatrix.js';
 import { SafeUndoModal } from './admin/SafeUndoModal.js';
 import { BucketRelaxationModal } from './admin/BucketRelaxationModal.js';
+import { GoogleSheetsSyncModal } from './admin/GoogleSheetsSyncModal.js';
 import { AlertCircle, CheckCircle2, X } from 'lucide-react';
 
 interface AdminViewProps {
@@ -37,6 +38,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
   // Modal states
   const [isUndoModalOpen, setIsUndoModalOpen] = useState<boolean>(false);
   const [isRelaxModalOpen, setIsRelaxModalOpen] = useState<boolean>(false);
+  const [isSheetsModalOpen, setIsSheetsModalOpen] = useState<boolean>(false);
 
   // Status feedback toast
   const [feedback, setFeedback] = useState<ActionFeedback | null>(null);
@@ -201,6 +203,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
         actorRole="SUPER_ADMIN"
         onOpenUndo={() => setIsUndoModalOpen(true)}
         onOpenRelax={() => setIsRelaxModalOpen(true)}
+        onOpenSheetsSync={() => setIsSheetsModalOpen(true)}
         isLotActive={lotState?.status === 'ACTIVE'}
       />
 
@@ -280,6 +283,11 @@ export const AdminView: React.FC<AdminViewProps> = ({
         isOpen={isRelaxModalOpen}
         onClose={() => setIsRelaxModalOpen(false)}
         onConfirmRelax={handleConfirmRelax}
+      />
+
+      <GoogleSheetsSyncModal
+        isOpen={isSheetsModalOpen}
+        onClose={() => setIsSheetsModalOpen(false)}
       />
     </div>
   );

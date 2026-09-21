@@ -18,7 +18,7 @@ export default defineConfig({
     outDir: 'dist/client',
   },
   ssr: {
-    external: ['node:sqlite'],
+    external: ['node:sqlite', 'sqlite'],
   },
   // @ts-ignore
   test: {
@@ -26,7 +26,7 @@ export default defineConfig({
     globals: true,
     server: {
       deps: {
-        external: ['node:sqlite'],
+        external: ['node:sqlite', 'sqlite'],
       },
     },
   },

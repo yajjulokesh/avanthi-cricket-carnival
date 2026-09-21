@@ -548,6 +548,11 @@ export class AuctionEngine {
       WHERE id = ?
     `).run(result.undoneSale.playerId);
 
+    const player = this.getPlayer(result.undoneSale.playerId);
+    if (player && this.onPlayerStatusChange) {
+      this.onPlayerStatusChange({ ...player, status: 'AUCTIONABLE', assignedFranchiseId: undefined, soldPrice: undefined });
+    }
+
     this.logAudit(actor, 'SAFE_UNDO', { saleId, reason });
 
     // Refresh scarcity and all franchise states
@@ -631,7 +636,41 @@ export class AuctionEngine {
     }
   }
 
-  private broadcastState() {
+  public getPlayer(id: string): Player | null {
+    const row = db.prepare('SELECT * FROM players WHERE id = ?').get(id) as any;
+    if (!row) return null;
+    return {
+      id: row.id,
+      rollNumber: row.roll_number,
+      name: row.name,
+      mobile: row.mobile,
+      photoUrl: row.photo_url,
+      cricHeroesProfileUrl: row.cricheroes_url,
+      cricHeroesMobile: row.cricheroes_mobile,
+      cricHeroesPending: Boolean(row.cricheroes_pending),
+      course: row.course,
+      program: row.program,
+      branch: row.branch,
+      admissionYear: row.admission_year,
+      yearOfStudy: row.year_of_study,
+      isLateral: Boolean(row.is_lateral),
+      bucket: row.bucket,
+      derivedType: row.derived_type,
+      skills: JSON.parse(row.skills_json),
+      stats: JSON.parse(row.stats_json),
+      basePrice: row.base_price,
+      referredFranchiseId: row.referred_franchise_id,
+      isPaid: Boolean(row.is_paid),
+      isDetainedOverride: Boolean(row.is_detained_override),
+      status: row.status,
+      bucketNumber: row.bucket_number,
+      editingLocked: Boolean(row.editing_locked),
+      assignedFranchiseId: row.assigned_franchise_id,
+      soldPrice: row.sold_price,
+    };
+  }
+
+  public broadcastState() {
     if (this.onStateChange) {
       this.onStateChange(this.getLotState());
     }

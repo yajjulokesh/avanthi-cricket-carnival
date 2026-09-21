@@ -10,6 +10,8 @@ import { authRouter } from './routes/auth.js';
 import { playersRouter } from './routes/players.js';
 import { franchisesRouter } from './routes/franchises.js';
 import { auctionRouter } from './routes/auction.js';
+import { sheetsRouter } from './routes/sheets.js';
+import { googleSheetsService } from './services/sheets.js';
 
 const app = express();
 const server = http.createServer(app);
@@ -31,6 +33,7 @@ app.use(express.urlencoded({ extended: true }));
 // Initialize DB schema & seed demo data
 initDatabase();
 seedDatabase();
+googleSheetsService.restartAutoSyncTimer();
 
 // Setup Real-Time WebSockets
 setupSocketHandlers(io);
@@ -40,6 +43,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/players', playersRouter);
 app.use('/api/franchises', franchisesRouter);
 app.use('/api/auction', auctionRouter);
+app.use('/api/sheets', sheetsRouter);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

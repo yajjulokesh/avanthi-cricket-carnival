@@ -111,6 +111,15 @@ export function initDatabase() {
     );
   `);
 
+  // Settings & Integrations (Google Sheets sync, etc.)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
   // Insert default bucket minimums if not present
   const count = db.prepare('SELECT count(*) as cnt FROM bucket_minimums').get() as { cnt: number };
   if (count.cnt === 0) {
