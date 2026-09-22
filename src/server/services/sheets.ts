@@ -2,6 +2,7 @@ import { db } from '../db.js';
 import { parseRollNumber, derivePlayerType, CURRENT_ACADEMIC_YEAR } from '../../core/parser.js';
 import { Player, PlayerSkillProfile, CricHeroesStats, Bucket, PlayerStatus } from '../../core/types.js';
 import { auctionEngine } from '../state.js';
+import * as XLSX from 'xlsx';
 
 export interface GoogleSheetsConfig {
   webhookUrl: string;
@@ -94,17 +95,54 @@ class GoogleSheetsService {
     }
 
     try {
-      const response = await fetch(config.webhookUrl, {
+      let fetchUrl = config.webhookUrl.trim();
+
+      // Check if user entered a standard Google Sheets spreadsheet link instead of Web App
+      const sheetMatch = fetchUrl.match(/docs\.google\.com\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+      if (sheetMatch) {
+        const sheetId = sheetMatch[1];
+        fetchUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+      }
+
+      const response = await fetch(fetchUrl, {
         method: 'GET',
-        headers: { 'Accept': 'application/json' },
+        redirect: 'follow',
+        headers: {
+          'Accept': 'application/json, text/csv, text/plain, */*',
+        },
       });
 
       if (!response.ok) {
-        throw new Error(`Google Sheets Webhook responded with HTTP status ${response.status}`);
+        throw new Error(`Google Sheets responded with HTTP status ${response.status}`);
       }
 
-      const data = await response.json();
-      const rawRows: any[] = Array.isArray(data) ? data : data.players || data.rows || [];
+      const text = await response.text();
+
+      // Check if Google redirected to a Google Account login page
+      if (
+        text.includes('accounts.google.com') ||
+        text.includes('AccountsSignInUi') ||
+        text.trim().startsWith('<!doctype') ||
+        text.trim().startsWith('<html')
+      ) {
+        throw new Error(
+          'Google Access Blocked (Login Required): In your Google Apps Script, go to Deploy > Manage deployments > click the Edit (pencil) icon, change "Who has access" to "Anyone" (not "Only myself"), and click Deploy. If you provided a spreadsheet URL, ensure General Access is set to "Anyone with the link".'
+        );
+      }
+
+      let rawRows: any[] = [];
+      const trimmed = text.trim();
+      if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+        const data = JSON.parse(trimmed);
+        rawRows = Array.isArray(data) ? data : data.players || data.rows || [];
+      } else {
+        // Parse CSV export
+        const workbook = XLSX.read(trimmed, { type: 'string' });
+        const sheetName = workbook.SheetNames[0];
+        if (sheetName) {
+          rawRows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+        }
+      }
 
       if (!Array.isArray(rawRows)) {
         throw new Error('Invalid response format: expected an array of player objects.');

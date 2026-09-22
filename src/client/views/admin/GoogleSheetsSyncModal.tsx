@@ -225,17 +225,17 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({ is
           <form onSubmit={handleSaveConfig} className="space-y-4">
             <div>
               <label className="block text-[10px] text-spengle-muted tracking-widest-tech uppercase mb-1.5">
-                GOOGLE APPS SCRIPT WEBHOOK URL:
+                GOOGLE APPS SCRIPT WEBHOOK OR SPREADSHEET URL:
               </label>
               <input
                 type="url"
-                placeholder="https://script.google.com/macros/s/.../exec"
+                placeholder="https://script.google.com/macros/s/.../exec OR https://docs.google.com/spreadsheets/d/..."
                 value={config.webhookUrl}
                 onChange={(e) => setConfig({ ...config, webhookUrl: e.target.value })}
                 className="w-full bg-spengle-surface text-spengle-titanium p-2.5 border border-spengle-border focus:border-spengle-gold outline-none tracking-wider text-xs"
               />
               <p className="text-[10px] text-spengle-dim mt-1">
-                Deploy the companion Apps Script (below) as Web App (Access: Anyone) and paste the URL here.
+                Paste your deployed Apps Script Web App URL (Access: Anyone) OR your public Google Spreadsheet link.
               </p>
             </div>
 
@@ -316,13 +316,23 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({ is
               </button>
             </div>
 
-            <ol className="list-decimal list-inside space-y-1 text-spengle-muted text-[11px] bg-spengle-surface p-3 border border-spengle-border">
+            <ol className="list-decimal list-inside space-y-1.5 text-spengle-muted text-[11px] bg-spengle-surface p-3 border border-spengle-border">
               <li>Open your Google Sheet ➔ Click <strong>Extensions ➔ Apps Script</strong>.</li>
               <li>Paste the copied script code into the script editor.</li>
               <li>Click <strong>Deploy ➔ New deployment</strong> ➔ Select <strong>Web app</strong>.</li>
-              <li>Set <em>Execute as</em>: <strong>Me</strong> and <em>Who has access</em>: <strong>Anyone</strong>.</li>
-              <li>Deploy and paste the generated Web App URL into the field above!</li>
+              <li>
+                Set <em>Execute as</em>: <strong>Me</strong> and <em>Who has access</em>:{' '}
+                <strong className="text-amber-400 font-black">"Anyone"</strong>.
+                <div className="text-[10px] text-amber-300/90 pl-4 mt-0.5">
+                  ⚠️ Critical: If left as "Only myself", Google returns an HTML sign-in page which causes the "Unexpected token &lt;" error.
+                </div>
+              </li>
+              <li>Click <strong>Deploy</strong> and paste the generated Web App URL into the field above!</li>
             </ol>
+
+            <div className="p-2.5 bg-spengle-surface border border-spengle-border text-[10px] text-spengle-dim">
+              💡 <strong>Direct Spreadsheet Link Option:</strong> You can also paste your Google Sheet URL directly (e.g. <code>https://docs.google.com/spreadsheets/d/...</code>) as long as General Access is set to <em>"Anyone with the link can view"</em>.
+            </div>
 
             <button
               type="button"
